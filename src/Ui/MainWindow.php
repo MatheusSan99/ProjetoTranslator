@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MatheusSan\Translator\Ui;
 
+use MatheusSan\Translator\Ui\Design\TranslatorButtons;
 use Tkui\Application;
 use Tkui\Dialogs\DirectoryDialog;
 use Tkui\Dialogs\OpenFileDialog;
@@ -30,8 +31,9 @@ use function sodium_crypto_box_seal_open;
 
 class MainWindow extends \Tkui\Windows\MainWindow
 {
-    private string $publicKeyPath = '';
-    private string $secretKeyPath = '';
+
+    use TranslatorButtons;
+
     private Text $messageText;
     private Text $resultText;
 
@@ -42,8 +44,6 @@ class MainWindow extends \Tkui\Windows\MainWindow
 
     public function draw(): void
     {
-        $this->defineApplicationMenu();
-
         $panedWindow = new PanedWindow($this, ['orient' => Orient::ORIENT_HORIZONTAL]);
         $messageFrame = $this->messageFrame();
         $buttonsFrame = $this->buttonsFrame();
@@ -54,13 +54,6 @@ class MainWindow extends \Tkui\Windows\MainWindow
         $windowManager = $this->getWindowManager();
         $windowManager->setSize(480, 380);
         $windowManager->setMinSize(480, 380);
-    }
-
-    private function defineApplicationMenu(): void
-    {
-        $menu = new Menu($this);
-
-        $this->setMenu($menu);
     }
 
 
@@ -83,35 +76,5 @@ class MainWindow extends \Tkui\Windows\MainWindow
         return $labelFrame;
     }
 
-    public function buttonsFrame(): Frame
-    {
-        $frame = new Frame($this);
 
-        $encryptButton = new Button($frame, 'Traduzir');
-        $encryptButton->onClick(function (): void {
-            $plainText = $this->messageText->getContent();
-            $cypher = sodium_crypto_box_seal($plainText, file_get_contents($this->publicKeyPath));
-
-            $this->resultText->setContent(sodium_bin2hex($cypher));
-        });
-
-        $decryptButton = new Button($frame, 'Traducoes Fora do Padrao');
-        $decryptButton->onClick(function (): void {
-            $message = sodium_hex2bin(trim($this->messageText->getContent()));
-            $keyPair = sodium_crypto_box_keypair_from_secretkey_and_publickey(
-                file_get_contents($this->secretKeyPath),
-                file_get_contents($this->publicKeyPath),
-            );
-
-            $plainText = sodium_crypto_box_seal_open($message, $keyPair);
-
-            $this->resultText->setContent($plainText ?: 'Erro ao traduzir');
-        });
-
-        $frame->borderWidth = 1;
-        $frame->pack($encryptButton, ['side' => Pack::SIDE_LEFT]);
-        $frame->pack($decryptButton, ['side' => Pack::SIDE_RIGHT]);
-
-        return $frame;
-    }
 }
