@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use MatheusSan\Translator\Ui\MainWindow;
+use MatheusSan\Translator\Ui\TranslatorMain;
 use Tkui\Environment;
 use Tkui\TclTk\TkAppFactory;
 
@@ -22,11 +22,11 @@ $environment = new class implements Environment
         return self::$environmentData[$param] ?? $default;
     }
 };
-$factory = new TkAppFactory('Tradutor Automatico');
+$factory = new TkAppFactory();
 $app = $factory->createFromEnvironment($environment);
 
 // TODO: Refactor this class because all the code lives there so far
-$mainWindow = new MainWindow($app, 'Tradutor Automatico');
+$mainWindow = new TranslatorMain();
 $mainWindow->draw();
 
 $app->run();
